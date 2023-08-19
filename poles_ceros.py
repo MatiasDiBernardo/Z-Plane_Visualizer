@@ -1,8 +1,6 @@
 import pygame
 import numpy as np
 
-#La idea es hacer cada polo o cero una clase así puedo manejar mejor el orden y el la symetria
-
 class Pole():
     def __init__(self, pole_size, position, value_pos, value_pos_sym, symmetry, y_start, plane_size, order=1):
         self.pole_size = pole_size
@@ -18,7 +16,7 @@ class Pole():
         self.value = self.get_value(value_pos)
         self.value_sym = self.get_value(value_pos_sym)
         self.rect = self.get_rect(position)
-        self.rect_sym = self.get_rect(self.pos_symmetry(position))
+        self.rect_sym = self.get_rect(self.position_sym)
     
     def update_values(self, pos, value_pos, value_sym):
         self.position = pos
@@ -66,7 +64,6 @@ class Pole():
         if self.symmetry:
             pos_sym = self.pos_symmetry(pos)
             self.pole_draw(win, pos, color)
-            print(pos_sym)
             self.pole_draw(win, pos_sym, color)
         else:
             self.pole_draw(win, pos, color)
@@ -74,7 +71,7 @@ class Pole():
     def draw(self, win, color):
         if self.symmetry:
             self.pole_draw(win, self.position, color)
-            self.pole_draw(win, self.value_sym, color)
+            self.pole_draw(win, self.position_sym, color)
         else:
             self.pole_draw(win, self.position, color)
 
@@ -96,4 +93,39 @@ class Pole():
         y1 = pos[1] - delta
         return pygame.Rect(x1, y1, self.pole_size, self.pole_size)
 
-#Heredar de aca y hacer clase ceros
+class Cero(Pole):
+    def __init__(self, pole_size, position, value_pos, value_pos_sym, symmetry, y_start, plane_size, order=1):
+        super().__init__(pole_size, position, value_pos, value_pos_sym, symmetry, y_start, plane_size, order)
+        self.pole_size = pole_size
+        self.type = "Cero"
+        self.y_start = y_start
+        self.plane_size = plane_size
+        self.symmetry = symmetry
+        self.order = order
+        self.moved = False
+
+        self.position = position
+        self.position_sym = self.pos_symmetry(position)
+        self.value = self.get_value(value_pos)
+        self.value_sym = self.get_value(value_pos_sym)
+        self.rect = self.get_rect(position)
+        self.rect_sym = self.get_rect(self.position_sym)
+
+    def cero_draw(self, win, pos, color):
+        pygame.draw.circle(win, color, pos, self.pole_size - 1, width=1)
+
+    def draw_unassigned(self, win, pos, color):
+        #For the selection process when pole is display buy unassigned
+        if self.symmetry:
+            pos_sym = self.pos_symmetry(pos)
+            self.cero_draw(win, pos, color)
+            self.cero_draw(win, pos_sym, color)
+        else:
+            self.cero_draw(win, pos, color)
+
+    def draw(self, win, color):
+        if self.symmetry:
+            self.cero_draw(win, self.position, color)
+            self.cero_draw(win, self.position_sym, color)
+        else:
+            self.cero_draw(win, self.position, color)

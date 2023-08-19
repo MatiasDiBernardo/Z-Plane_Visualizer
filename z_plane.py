@@ -1,23 +1,17 @@
 import pygame
 import numpy as np
-from poles_ceros import Pole
+from poles_ceros import Pole, Cero
 
 class ZPlane():
     def __init__(self, x_start, y_start, font):
         self.x_start = x_start  #Starting position (upper left)
         self.y_start = y_start
-        self.font = font
         self.plane_size = 400  #Size of the Z Plane
+        self.poles_size = 10  #Dimension of poles in pixels (same for ceros)
+        self.font = font
         self.background_color = (15, 15, 15)  #For the Z plane
         self.withe = (255, 255, 255)
-        self.poles_size = 10  #Dimension of poles in pixels (same for ceros)
-        self.position_poles = []  #Positions of poles in pixels
-        self.position_ceros = []
-        self.rect_poles = []  #Entities used for collition detection
-        self.rect_ceros = []
-        self.val_poles = []  #Real values of poles
-        self.val_ceros = []
-        self.moving_element = None  #Keeps track of moving poles or ceros
+
         self.zoom = 4  #Starting zoom index value
         self.symmetry = False
         self.center_plane = (x_start + self.plane_size // 2, y_start + self.plane_size // 2) 
@@ -25,13 +19,11 @@ class ZPlane():
         self.items = []  #List with pole or cero objetcs
         self.clicked = False  #To catch keep track of different actions (button functionality)
         self.emptyPole = Pole(self.poles_size, (0,0), (0,0), (0,0), False, y_start, self.plane_size)  #For unassigned display
-        self.emptyCero = 0
+        self.emptyCero = Cero(self.poles_size, (0,0), (0,0), (0,0), False, y_start, self.plane_size)
 
     def default_background(self, win):
         #Background
-        pygame.draw.rect(win, self.background_color, (
-            self.x_start, self.y_start, self.plane_size,self.plane_size,
-        ))
+        pygame.draw.rect(win, self.background_color, (self.x_start, self.y_start, self.plane_size,self.plane_size))
 
         #Unit circle
         zoom_values = [150, 100, 50, 20, 10, 2]  #List of different zoom values
@@ -61,15 +53,10 @@ class ZPlane():
             self.zoom -= 1
 
     def clear_zplane(self):
-        self.position_poles = []  
-        self.position_ceros = []
-        self.rect_poles = []  
-        self.rect_ceros = []
-        self.val_poles = []  
-        self.val_ceros = []
+        self.items = []
     
     def graph_cero(self, win, pos, color):
-        pygame.draw.circle(win, color, pos, self.poles_size - 1, width=1)
+        self.emptyCero.draw_unassigned(win, pos, color)
     
     def graph_pole(self, win, pos, color):
         self.emptyPole.draw_unassigned(win, pos, color)
@@ -95,10 +82,8 @@ class ZPlane():
     def detect_collition(self, item, pos):
         mouse_collition = False
         if item.symmetry:
-            pos_sym = item.position_sym
-            if item.rect.collidepoint(pos) or item.rect_sym.collidepoint(pos_sym):
+            if item.rect.collidepoint(pos) or item.rect_sym.collidepoint(pos):
                 mouse_collition = True
-        
         else:
             if item.rect.collidepoint(pos):
                 mouse_collition = True
@@ -123,7 +108,7 @@ class ZPlane():
     def click_objects(self, win):
         pos = pygame.mouse.get_pos()
         moving = False
-        color_change = (140, 17, 17)
+        color_change = (180, 17, 17)
 
         #Iterates over all objetcs created and looks for collitions
         for i, item in enumerate(self.items):
@@ -132,10 +117,8 @@ class ZPlane():
                 self.change_color_when_over(win, item, color_change)
                 
                 #Remove pole with left click and leaves
-                if pygame.mouse.get_pressed()[2] == 1 and not self.symmetry:
-                    print("Control, len antes: ", len(self.items))
+                if pygame.mouse.get_pressed()[2] == 1:
                     self.items.remove(item)
-                    print("Control, len despues: ", len(self.items))
                     break
                     
                 #If the user rigth clicks on item the moving state (global) change to true
@@ -165,6 +148,7 @@ class ZPlane():
 
         #While pressing right click the user can move an item
         if pygame.mouse.get_pressed()[0] and self.pos_in_plane(pos):
+            self.change_color_when_over(win, self.items[idx_moving], (0,255,0))
             keep_moving = True
             value_sym = self.z_plane_position(self.items[idx_moving].position_sym)
             self.items[idx_moving].update_values(pos, value_pos, value_sym)  #Adjust all the values of the moving item
@@ -204,7 +188,24 @@ class ZPlane():
             x_vals = np.round(value_pos[0], 2)
             y_vals = np.round(value_pos[1], 2)
             values_text = self.font.render(f"{x_vals} ; {y_vals}i", True, (255, 255, 255))
-            win.blit(values_text, (100, 510))
+            win.blit(values_text, (100, 515))
+    
+    def display_item_unassigned(self, win, pos, type, color):
+        if self.symmetry:
+            if type == "Pole":
+                pos_sym = self.emptyPole.pos_symmetry(pos)
+                self.emptyPole.draw_unassigned(win, pos, color)
+                self.emptyPole.draw_unassigned(win, pos_sym, color)
+            if type == "Cero":
+                pos_sym = self.emptyPole.pos_symmetry(pos)
+                self.emptyCero.draw_unassigned(win, pos, color)
+                self.emptyCero.draw_unassigned(win, pos_sym, color)
+        else:
+            if type == "Pole":
+                self.emptyPole.draw_unassigned(win, pos, color)
+            if type == "Cero":
+                self.emptyCero.draw_unassigned(win, pos, color)
+
     
     def select_pole_or_cero(self, win, type):
         #In the selection process the transfer function is not updated
@@ -214,11 +215,7 @@ class ZPlane():
         value_pos = self.z_plane_position(pos)
 
         #Display pole or cero unassigned
-        if type == "Pole":
-            self.emptyPole.draw_unassigned(win, pos, self.withe)
-        if type == "Cero":
-            self.emptyPole.draw_unassigned(win, pos, self.withe)  #Cambiar a objeto de cero
-
+        self.display_item_unassigned(win, pos, type, self.withe)
         #Display pole or cero position on screen
         self.display_value_on_screen(win, value_pos)
 
@@ -233,11 +230,8 @@ class ZPlane():
                 self.items.append(Pole(self.poles_size, pos, value_pos, value_pos_sym, self.symmetry, self.y_start, self.plane_size))
 
             if type == "Cero":
-                self.position_ceros.append(pos)
-                entity = self.create_rect(pos)
-                self.rect_ceros.append(entity)
-                if self.pos_in_plane(pos):
-                    self.val_ceros.append(self.pix2val(pos))
+                value_pos_sym = self.z_plane_position(self.emptyPole.pos_symmetry(pos))
+                self.items.append(Cero(self.poles_size, pos, value_pos, value_pos_sym, self.symmetry, self.y_start, self.plane_size))
                 
             action = True
             self.clicked = True

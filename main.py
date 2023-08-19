@@ -8,6 +8,7 @@ pygame.font.init()
 WIDTH = 925
 HEIGTH = 550
 WIN = pygame.display.set_mode((WIDTH, HEIGTH))
+FPS = 60
 
 clock = pygame.time.Clock()
 icon = pygame.image.load('images/icon.png').convert_alpha()
@@ -55,7 +56,7 @@ def main():
     item_moving = False
 
     while run:
-        clock.tick(30)
+        clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -132,7 +133,7 @@ def main():
         items = zplane.items
         if len(items) != 0:
             ver = items[0].values()
-            print(ver)
+            #print(ver)
 
         pygame.display.update()
 
