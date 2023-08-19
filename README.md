@@ -1,6 +1,6 @@
 # Z-Plane Visualizer
 
-The Z-Plane Visualizer is a GUI where the user can move poles and zeros in the Z Plane and observe the corresponding transfer function and phase for the current pole/cero distribution in real time. The objective of this project is to serve as an educational tool for students looking for a program that helps you to develop intuition about the pole/zero interaction in the Z plane. It is not created as a filter designing tool.
+The Z-Plane Visualizer is a GUI where the user can move poles and zeros in the Z Plane and observe the corresponding transfer function (magnitude and phase) for the current pole/cero distribution in real time. The objective of this project is to serve as an educational tool for students looking for a program that helps you to develop intuition about the pole/zero interaction in the Z plane. It is not created as a filter designing tool.
 
 ![](https://github.com/MatiasDiBernardo/Z-Plane_Visualizer/blob/main/images/readme_gif.gif)
 
@@ -24,10 +24,8 @@ python main.py
 ```
 
 ## To do
-Limitations of the current implementation, improvements and bugs.
-- Add double pole or zero feature
+Limitations of the current implementation, improvements and bugs (Working on dev branch).
+- Add order for pole or zero feature
 - Add impulse response graph
 - Add values and reference for the magnitude and phase plot
-- Fix bug (check and uncheck symmetry error)
 - Improve GUI
-- Refactor
