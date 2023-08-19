@@ -30,84 +30,37 @@ class GraphPlotting():
             (self.x_start + self.width//2, self.y_start + self.heigth))
             pygame.draw.line(win, self.color_lines, (self.x_start, self.y_start + self.heigth//2), 
                             (self.x_start + self.width, self.y_start + self.heigth//2))
-
-    def plot_magnitude(self, win, zplane):
-        ceros = zplane.val_ceros
-        poles = zplane.val_poles
-        mov = zplane.moving_element
-
-        if len(ceros) != 0 or len(poles) != 0 or mov != None:
-            #Draw dynamic plot
-            if mov != None:
-                #Adds moving pole or cero to list
-                if mov[1] == "Pole":
-                    poles.append(mov[0])
-                if mov[1] == "Pole Symmetric":
-                    poles.append(mov[0])
-                    poles.append(mov[2])
-                if mov[1] == "Cero":
-                    ceros.append(mov[0])
-                if mov[1] == "Cero Symmetric":
-                    ceros.append(mov[0])
-                    ceros.append(mov[2])
-
-                pixels_mag = magnitude_values(ceros, poles, self.x_start, self.y_start, self.heigth)
-                pygame.draw.lines(win, (255, 255, 255), False, pixels_mag)
-
-                #Removes pole or creo from list
-                if mov[1] == "Pole":
-                    poles.pop()
-                if mov[1] == "Pole Symmetric":
-                    poles.pop()
-                    poles.pop()
-                if mov[1] == "Cero":
-                    ceros.pop()
-                if mov[1] == "Cero Symmetric":
-                    ceros.pop()
-                    ceros.pop()
-            
-            #Draw static plot
+        
+    def get_poles_and_ceros(self, items):
+        poles_values = []
+        ceros_values = []
+        
+        for item in items:
+            #Define if is a symmetry case or not
+            if item.symmetry:
+                #Defines the type of item
+                if item.type == "Pole":
+                    poles_values.append(item.value)
+                    poles_values.append(item.value_sym)
+                if item.type == "Cero":
+                    ceros_values.append(item.value)
+                    ceros_values.append(item.value_sym)
             else:
-                pixels_mag = magnitude_values(ceros, poles, self.x_start, self.y_start, self.heigth)
-                pygame.draw.lines(win, (255, 255, 255), False, pixels_mag)
+                if item.type == "Pole":
+                    poles_values.append(item.value)
+                if item.type == "Cero":
+                    ceros_values.append(item.value)
+
+        return poles_values, ceros_values
+    
+    def plot_magnitude(self, win, zplane):
+        items = zplane.items  #Contains all poles and cero objetcs
+        poles_val, ceros_val = self.get_poles_and_ceros(items)
+        pixels_mag = magnitude_values(ceros_val, poles_val, self.x_start, self.y_start, self.heigth)
+        pygame.draw.lines(win, (255, 255, 255), False, pixels_mag)
         
     def plot_phase(self, win, zplane):
-        ceros = zplane.val_ceros
-        poles = zplane.val_poles
-        mov = zplane.moving_element
-
-        if len(ceros) != 0 or len(poles) != 0 or mov != None:
-            #Draw dynamic plot
-            if mov != None:
-                #Adds moving pole or cero to list
-                if mov[1] == "Pole":
-                    poles.append(mov[0])
-                if mov[1] == "Pole Symmetric":
-                    poles.append(mov[0])
-                    poles.append(mov[2])
-                if mov[1] == "Cero":
-                    ceros.append(mov[0])
-                if mov[1] == "Cero Symmetric":
-                    ceros.append(mov[0])
-                    ceros.append(mov[2])
-
-                pixels_phase = phase_values(ceros, poles, self.x_start, self.y_start, self.heigth)
-                pygame.draw.lines(win, (255, 255, 255), False, pixels_phase)
-
-                #Removes pole or creo from list
-                if mov[1] == "Pole":
-                    poles.pop()
-                if mov[1] == "Pole Symmetric":
-                    poles.pop()
-                    poles.pop()
-                if mov[1] == "Cero":
-                    ceros.pop()
-                if mov[1] == "Cero Symmetric":
-                    ceros.pop()
-                    ceros.pop()
-            
-            #Draw static plot
-            else:
-                pixels_phase = phase_values(ceros, poles, self.x_start, self.y_start, self.heigth)
-                pygame.draw.lines(win, (255, 255, 255), False, pixels_phase)
-                
+        items = zplane.items  #Contains all poles and cero objetcs
+        poles_val, ceros_val = self.get_poles_and_ceros(items)
+        pixels_phase = phase_values(ceros_val, poles_val, self.x_start, self.y_start, self.heigth)
+        pygame.draw.lines(win, (255, 255, 255), False, pixels_phase)

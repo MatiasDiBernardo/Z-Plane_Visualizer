@@ -51,16 +51,8 @@ def main():
     run = True
     font_color = (255, 255, 255)
     pole_selection = False
-    pole_moving = False
     cero_selection = False
-    cero_moving = False
-
-    #To avoid collition of inputs between different functionality
-    #En vez de hacer esto tendría que hacer como en la clase boton que cambia un bool para saber cuando clickeo una vez
-    frames_delay_pole = 0     
-    frames_delay_move_pole = 0
-    frames_delay_cero = 0
-    frames_delay_move_cero = 0
+    item_moving = False
 
     while run:
         clock.tick(30)
@@ -98,46 +90,22 @@ def main():
             pole_selection = True
         
         if pole_selection:
-            pole_selection = zplane.select_pole_or_cero(WIN, frames_delay_pole, "Pole")
-            if frames_delay_pole < 10:
-                frames_delay_pole += 1
-        else:
-            frames_delay_pole = 0
-
-        #Allows to move poles and ceros
-        if not pole_selection:
-            if zplane.click_poles(WIN, frames_delay_move_pole) and pole_moving == False:          
-                pole_moving = True
-            if frames_delay_move_pole < 10:
-                frames_delay_move_pole += 1
-        else:
-            frames_delay_move_pole = 0
-
-        if pole_moving:
-            pole_moving = zplane.move_pole(WIN)
+            pole_selection = zplane.select_pole_or_cero(WIN, "Pole")
 
         #Display Cero
         if CERO_BUTTON.draw(WIN):
             cero_selection = True
         
         if cero_selection:
-            cero_selection = zplane.select_pole_or_cero(WIN, frames_delay_cero, "Cero")
-            if frames_delay_cero < 10:
-                frames_delay_cero += 1
-        else:
-            frames_delay_cero = 0
+            cero_selection = zplane.select_pole_or_cero(WIN, "Cero")
         
-        #Allows to move ceros
-        if not cero_selection:
-            if zplane.click_ceros(WIN, frames_delay_move_cero) and pole_moving == False:          
-                cero_moving = True
-            if frames_delay_move_cero < 10:
-                frames_delay_move_cero += 1
-        else:
-            frames_delay_move_cero = 0
+        #Allows to move poles and ceros
+        if not pole_selection and not cero_selection:
+            if zplane.click_objects(WIN) and item_moving == False:          
+                item_moving = True
 
-        if cero_moving:
-            cero_moving = zplane.move_cero(WIN)
+        if item_moving:
+            item_moving = zplane.move_item(WIN)
         
         #Zoom buttons
         if ZOOM_PLUS_BUTTON.draw(WIN):
@@ -159,6 +127,12 @@ def main():
         #Show magnitude spectrum
         mag_grap.plot_magnitude(WIN, zplane)
         phase_grap.plot_phase(WIN, zplane)
+
+        #Debug
+        items = zplane.items
+        if len(items) != 0:
+            ver = items[0].values()
+            print(ver)
 
         pygame.display.update()
 

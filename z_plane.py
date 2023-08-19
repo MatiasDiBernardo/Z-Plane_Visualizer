@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+from poles_ceros import Pole
 
 class ZPlane():
     def __init__(self, x_start, y_start, font):
@@ -20,6 +21,11 @@ class ZPlane():
         self.zoom = 4  #Starting zoom index value
         self.symmetry = False
         self.center_plane = (x_start + self.plane_size // 2, y_start + self.plane_size // 2) 
+
+        self.items = []  #List with pole or cero objetcs
+        self.clicked = False  #To catch keep track of different actions (button functionality)
+        self.emptyPole = Pole(self.poles_size, (0,0), (0,0), (0,0), False, y_start, self.plane_size)  #For unassigned display
+        self.emptyCero = 0
 
     def default_background(self, win):
         #Background
@@ -66,21 +72,8 @@ class ZPlane():
         pygame.draw.circle(win, color, pos, self.poles_size - 1, width=1)
     
     def graph_pole(self, win, pos, color):
-        delta = self.poles_size // 2
-        l1 = (pos[0] - delta, pos[1] - delta)
-        l2 = (pos[0] + delta, pos[1] + delta)
-        pygame.draw.line(win, color, l1, l2, width=1)
-        
-        l3 = (pos[0] - delta, pos[1] + delta)
-        l4 = (pos[0] + delta, pos[1] - delta)
-        pygame.draw.line(win, color, l3, l4, width=1)
+        self.emptyPole.draw_unassigned(win, pos, color)
     
-    def create_rect(self, pos):
-        delta = self.poles_size // 2
-        x1 = pos[0] - delta
-        y1 = pos[1] - delta
-        return pygame.Rect(x1, y1, self.poles_size, self.poles_size)
-
     def pos_in_plane(self, pos):
         #Checks if the position of the mouse is inside the Z Plane boundries.
         x_cor = False
@@ -96,186 +89,89 @@ class ZPlane():
             return False
 
     def poles_and_ceros_display(self, win):
-        for p in self.position_poles:
-            self.graph_pole(win, p, self.withe)
-        
-        for c in self.position_ceros:
-            self.graph_cero(win, c, self.withe)
+        for item in self.items:
+            item.draw(win, self.withe)  #Note: Overide the draw method in the cero class
     
-    def click_poles(self, win, frame_delay):
+    def detect_collition(self, item, pos):
+        mouse_collition = False
+        if item.symmetry:
+            pos_sym = item.position_sym
+            if item.rect.collidepoint(pos) or item.rect_sym.collidepoint(pos_sym):
+                mouse_collition = True
+        
+        else:
+            if item.rect.collidepoint(pos):
+                mouse_collition = True
+        
+        return mouse_collition
+    
+    def change_color_when_over(self, win, item, color_change):
+        if item.symmetry:
+            if item.type == "Pole":
+                self.graph_pole(win, item.position, color_change)
+                self.graph_pole(win, item.position_sym, color_change)
+            if item.type == "Cero":
+                self.graph_cero(win, item.position, color_change)
+                self.graph_cero(win, item.position_sym, color_change)
+        
+        else:
+            if item.type == "Pole":
+                self.graph_pole(win, item.position, color_change)
+            if item.type == "Cero":
+                self.graph_cero(win, item.position, color_change)
+
+    def click_objects(self, win):
         pos = pygame.mouse.get_pos()
         moving = False
         color_change = (140, 17, 17)
-        assert len(self.position_poles) == len(self.rect_poles)
 
-        #Loops for colision in all poles
-        for i in range(len(self.rect_poles)):
-            if self.rect_poles[i].collidepoint(pos):
-                #Change color when the mouse is over pole
-                self.graph_pole(win, self.position_poles[i], color_change)
-
-                #Remove pole with left click
+        #Iterates over all objetcs created and looks for collitions
+        for i, item in enumerate(self.items):
+            if self.detect_collition(item, pos):
+                #Change color when the mouse is over item
+                self.change_color_when_over(win, item, color_change)
+                
+                #Remove pole with left click and leaves
                 if pygame.mouse.get_pressed()[2] == 1 and not self.symmetry:
-                    self.position_poles.pop(i)
-                    self.rect_poles.pop(i)
-                    self.val_poles.pop(i)
+                    print("Control, len antes: ", len(self.items))
+                    self.items.remove(item)
+                    print("Control, len despues: ", len(self.items))
                     break
                     
-                #If the user clicks on pole change the state (moving) to true and deletes the static pole
-                if frame_delay > 8:
-                    if pygame.mouse.get_pressed()[0] == 1 and moving == False:
-                        self.position_poles.pop(i)
-                        self.rect_poles.pop(i)
-                        self.val_poles.pop(i)
-
-                        #Removes symmetry
-                        if self.symmetry and len(self.position_poles) != 0:
-                            self.position_poles.pop(i)
-                            self.rect_poles.pop(i)
-                            self.val_poles.pop(i)
-
-                        moving = True
-                        #When a pole is clicked there is no need to check for other collision
-                        break
-        return moving
-
-    def click_ceros(self, win, frame_delay):
-        pos = pygame.mouse.get_pos()
-        moving = False
-        color_change = (140, 17, 17)
-        assert len(self.position_ceros) == len(self.rect_ceros)
-
-        #Loops for colision in all ceros
-        for i in range(len(self.rect_ceros)):
-            if self.rect_ceros[i].collidepoint(pos):
-                #Change color when the mouse is over pole
-                self.graph_cero(win, self.position_ceros[i], color_change)
-
-                #Remove cero with left click
-                if pygame.mouse.get_pressed()[2] == 1 and not self.symmetry:
-                    self.position_ceros.pop(i)
-                    self.rect_ceros.pop(i)
-                    self.val_ceros.pop(i)
+                #If the user rigth clicks on item the moving state (global) change to true
+                if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                    self.items[i].moved= True  #Change the state of clicked item to moving
+                    moving = True
+                    self.clicked = True
+                    #When a pole is clicked there is no need to check for other collision
                     break
-                    
-                #If the user clicks on cero change the state (moving) to true
-                if frame_delay > 8:
-                    if pygame.mouse.get_pressed()[0] == 1 and moving == False:
-                        self.position_ceros.pop(i)
-                        self.rect_ceros.pop(i)
-                        self.val_ceros.pop(i)
 
-                        #Removes cero symmetry (assumes picks the first selected cero)
-                        if self.symmetry and len(self.position_ceros) != 0:
-                            self.position_ceros.pop(i)
-                            self.rect_ceros.pop(i)
-                            self.val_ceros.pop(i)
+                #Assures to check the condition only on the first press mouse event 
+                if pygame.mouse.get_pressed()[0] == 0:
+                    self.clicked = False
 
-                        moving = True
-                        #When a pole is clicked  there is no need to check for other collisions
-                        break
         return moving
 
-    def move_pole(self, win):
-        keep_moving = False
+    def move_item(self, win):
+        keep_moving = False  #Global variable that controls moving in main while
         pos = pygame.mouse.get_pos()
+        value_pos = self.z_plane_position(pos)
+        self.display_value_on_screen(win, value_pos)
 
-        #Display the real value of moving pole on screen
-        real_values = self.z_plane_position(pos)
-        if (real_values[0] != None) and (real_values[1] != None):
-            x_vals = np.round(real_values[0], 2)
-            y_vals = np.round(real_values[1], 2)
-            values_text = self.font.render(f"{x_vals} ; {y_vals}i", True, (255, 255, 255))
-            win.blit(values_text, (100, 515))
+        #Iterate to find the moving objetc
+        for i in range(len(self.items)):
+            if self.items[i].moved:
+                idx_moving = i
 
-        #While pressing right click the user can move a pole
+        #While pressing right click the user can move an item
         if pygame.mouse.get_pressed()[0] and self.pos_in_plane(pos):
             keep_moving = True
-            self.graph_pole(win, pos, self.withe)
-            #if self.pos_in_plane(pos):
-            self.moving_element = [self.pix2val(pos), "Pole"]
-
-        #When the user stop pressing this poles is saved
+            value_sym = self.z_plane_position(self.items[idx_moving].position_sym)
+            self.items[idx_moving].update_values(pos, value_pos, value_sym)  #Adjust all the values of the moving item
         else:
             keep_moving = False
-            self.moving_element = None
-            if self.pos_in_plane(pos):
-                self.position_poles.append(pos)
-                entity = self.create_rect(pos)
-                self.rect_poles.append(entity)
-                self.val_poles.append(self.pix2val(pos))
-     
-        #Moving Pole for Symmetry 
-        y_mid = self.y_start + self.plane_size//2  #Origin in Y coordinate
-        delta_y = y_mid - pos[1]
-        if self.symmetry and delta_y != 0:
-            pos_sym = (pos[0], pos[1] + 2 * delta_y)
-            #While pressing right click the user can move a pole
-            if pygame.mouse.get_pressed()[0]:
-                self.graph_pole(win, pos_sym, self.withe)
-                if self.pos_in_plane(pos_sym):
-                    self.moving_element = [self.pix2val(pos), "Pole Symmetric", self.pix2val(pos_sym)]
-
-            #When the user stop pressing this poles is saved
-            else:
-                self.moving_element = None
-                self.position_poles.append(pos_sym)
-                entity = self.create_rect(pos_sym)
-                self.rect_poles.append(entity)
-                if self.pos_in_plane(pos_sym):
-                    self.val_poles.append(self.pix2val(pos_sym))
-
-        return keep_moving
-
-    def move_cero(self, win):
-        keep_moving = False
-        pos = pygame.mouse.get_pos()
-
-        #Display the real value of the moving cero on screen
-        real_values = self.z_plane_position(pos)
-        if (real_values[0] != None) and (real_values[1] != None):
-            x_vals = np.round(real_values[0], 2)
-            y_vals = np.round(real_values[1], 2)
-            values_text = self.font.render(f"{x_vals} ; {y_vals}i", True, (255, 255, 255))
-            win.blit(values_text, (100, 515))
-
-        #While pressing right click the user can move a pole
-        if pygame.mouse.get_pressed()[0]:
-            keep_moving = True
-            self.graph_cero(win, pos, self.withe)
-            if self.pos_in_plane(pos):
-                self.moving_element = [self.pix2val(pos), "Cero"]
+            self.items[idx_moving].moved = False
         
-        #When the user stop pressing this poles is saved
-        else:
-            keep_moving = False
-            self.moving_element = None
-            if self.pos_in_plane(pos):
-                self.position_ceros.append(pos)
-                entity = self.create_rect(pos)
-                self.rect_ceros.append(entity)
-                self.val_ceros.append(self.pix2val(pos))
-        
-        #Moving cero for symmetry
-        y_mid = self.y_start + self.plane_size//2  #Origin in Y coordinate
-        delta_y = y_mid - pos[1]
-        if self.symmetry and delta_y != 0:
-            pos_sym = (pos[0], pos[1] + 2 * delta_y)
-            #While pressing right click the user can move a pole
-            if pygame.mouse.get_pressed()[0]:
-                self.graph_cero(win, pos_sym, self.withe)
-                if self.pos_in_plane(pos_sym):
-                    self.moving_element = [self.pix2val(pos), "Cero Symmetric", self.pix2val(pos_sym)]
-
-            #When the user stop pressing this poles is saved
-            else:
-                self.moving_element = None
-                self.position_ceros.append(pos_sym)
-                entity = self.create_rect(pos_sym)
-                self.rect_ceros.append(entity)
-                if self.pos_in_plane(pos_sym):
-                    self.val_ceros.append(self.pix2val(pos_sym))
-
         return keep_moving
 
     def z_plane_position(self, pos):
@@ -303,79 +199,51 @@ class ZPlane():
 
         return (x, y)
     
-    def pix2val(self, pos):
-        x, y = self.z_plane_position(pos)
-        val = x + 1j*y
-        return val
-    
-    def select_pole_or_cero(self, win, frame_delay, type):
-        #In the selection process the transfer function is not updated
-        clicked = False
-        pos = pygame.mouse.get_pos()
-
-        if type == "Pole":
-            self.graph_pole(win, pos, self.withe)
-        if type == "Cero":
-            self.graph_cero(win, pos, self.withe)
-
-        #Display pole or cero position on screen
-        real_values = self.z_plane_position(pos)
-        if (real_values[0] != None) and (real_values[1] != None):
-            x_vals = np.round(real_values[0], 2)
-            y_vals = np.round(real_values[1], 2)
+    def display_value_on_screen(self, win, value_pos):
+        if (value_pos[0] != None) and (value_pos[1] != None):
+            x_vals = np.round(value_pos[0], 2)
+            y_vals = np.round(value_pos[1], 2)
             values_text = self.font.render(f"{x_vals} ; {y_vals}i", True, (255, 255, 255))
             win.blit(values_text, (100, 510))
+    
+    def select_pole_or_cero(self, win, type):
+        #In the selection process the transfer function is not updated
 
-        #Frames delay to avoid collitions in input response
-        if frame_delay > 8:
-            #With right click leaves the poles selection menu
-            if pygame.mouse.get_pressed()[2] == 1 and clicked == False:
-                clicked = True
+        action = False  #Click control on global scope (main while)
+        pos = pygame.mouse.get_pos()
+        value_pos = self.z_plane_position(pos)
 
-            #With left click chooses the spot for the pole
-            if pygame.mouse.get_pressed()[0] == 1 and self.pos_in_plane(pos):
-                if type == "Pole":
-                    self.position_poles.append(pos)
-                    entity = self.create_rect(pos)
-                    self.rect_poles.append(entity)
-                    if self.pos_in_plane(pos):
-                        self.val_poles.append(self.pix2val(pos))
-                if type == "Cero":
-                    self.position_ceros.append(pos)
-                    entity = self.create_rect(pos)
-                    self.rect_ceros.append(entity)
-                    if self.pos_in_plane(pos):
-                        self.val_ceros.append(self.pix2val(pos))
-                clicked = True
-        
-        #Lazy impplementation, activate symmetry in selection, new imp with classes to check sym
-        y_mid = self.y_start + self.plane_size//2  #Origin in Y coordinate
-        delta_y = y_mid - pos[1]
-        if self.symmetry and delta_y != 0:
-            pos_sym = (pos[0], pos[1] + 2 * delta_y)
-            
+        #Display pole or cero unassigned
+        if type == "Pole":
+            self.emptyPole.draw_unassigned(win, pos, self.withe)
+        if type == "Cero":
+            self.emptyPole.draw_unassigned(win, pos, self.withe)  #Cambiar a objeto de cero
+
+        #Display pole or cero position on screen
+        self.display_value_on_screen(win, value_pos)
+
+        #With right click leaves the poles selection menu
+        if pygame.mouse.get_pressed()[2] == 1 and self.clicked == False:
+            action = True
+
+        #With left click chooses the spot for the pole
+        if pygame.mouse.get_pressed()[0] == 1 and self.pos_in_plane(pos) and self.clicked == False:
             if type == "Pole":
-                self.graph_pole(win, pos_sym, self.withe)
+                value_pos_sym = self.z_plane_position(self.emptyPole.pos_symmetry(pos))
+                self.items.append(Pole(self.poles_size, pos, value_pos, value_pos_sym, self.symmetry, self.y_start, self.plane_size))
+
             if type == "Cero":
-                self.graph_cero(win, pos_sym, self.withe)
-
-
-            #Frames margin to avoid delay in input response
-            if frame_delay > 8:
-                #With left click chooses the spot for the pole
-                if pygame.mouse.get_pressed()[0] == 1 and self.pos_in_plane(pos_sym):
-                    if type == "Pole":
-                        self.position_poles.append(pos_sym)
-                        entity = self.create_rect(pos_sym)
-                        self.rect_poles.append(entity)
-                        if self.pos_in_plane(pos_sym):
-                            self.val_poles.append(self.pix2val(pos_sym))
-                    if type == "Cero":
-                        self.position_ceros.append(pos_sym)
-                        entity = self.create_rect(pos_sym)
-                        self.rect_ceros.append(entity)
-                        if self.pos_in_plane(pos_sym):
-                            self.val_ceros.append(self.pix2val(pos_sym))
+                self.position_ceros.append(pos)
+                entity = self.create_rect(pos)
+                self.rect_ceros.append(entity)
+                if self.pos_in_plane(pos):
+                    self.val_ceros.append(self.pix2val(pos))
+                
+            action = True
+            self.clicked = True
         
-        return not clicked
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+        
+        return not action
     
