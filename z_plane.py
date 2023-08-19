@@ -348,7 +348,7 @@ class ZPlane():
                         self.val_ceros.append(self.pix2val(pos))
                 clicked = True
         
-        #Lazy impplementation, activate symmetry in selection
+        #Lazy impplementation, activate symmetry in selection, new imp with classes to check sym
         y_mid = self.y_start + self.plane_size//2  #Origin in Y coordinate
         delta_y = y_mid - pos[1]
         if self.symmetry and delta_y != 0:
