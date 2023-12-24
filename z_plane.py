@@ -10,6 +10,7 @@ class ZPlane():
         self.poles_size = 10  # Dimension of poles in pixels (same for ceros)
         self.font = font
         self.background_color = (15, 15, 15)  #For the Z plane
+        self.colors = [(255, 255, 255), (150, 150, 255), (100, 100, 255), (50, 50, 255)]
         self.withe = (255, 255, 255)
 
         self.zoom = 3  # Starting zoom index value
@@ -77,7 +78,7 @@ class ZPlane():
 
     def poles_and_ceros_display(self, win):
         for item in self.items:
-            item.draw(win, self.withe)
+            item.draw(win, self.colors[item.order - 1])
     
     def detect_collition(self, item, pos):
         mouse_collition = False
@@ -111,7 +112,7 @@ class ZPlane():
         mouse_over = False
         pos = pygame.mouse.get_pos()
         time = time_frames/fps
-        time_margin = 1.5  # Time in seconds over the pole needed to display the info menu
+        time_margin = 1.2  # Time in seconds over the pole needed to display the info menu
         max_order = 4  # Maximun order avaliable for poles and ceros
 
         for item in self.items:
@@ -135,7 +136,7 @@ class ZPlane():
         color = (24, 38, 46)
         margin = 10
         width = 140
-        heigth = 130
+        heigth = 110
         font_color = (255, 255, 255)
         pygame.draw.rect(win, color, (pos[0] + margin, pos[1] + margin, width, heigth))
         value = info["Value"]

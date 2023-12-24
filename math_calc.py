@@ -66,7 +66,6 @@ def magnitude_values(ceros, poles, x0, y0, H):
         list: List with pixels coordenates.
     """
     mag, phase = transfer_function(ceros, poles)
-    mag = np.round(mag, 2)
 
     mag = mag/np.max(mag)  #Normalize to show always under the same reference.
     mag_pixels = values_to_pixels_mag(mag, x0, y0, H)
