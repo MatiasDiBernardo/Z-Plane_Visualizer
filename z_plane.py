@@ -12,12 +12,12 @@ class ZPlane():
         self.background_color = (15, 15, 15)  #For the Z plane
         self.withe = (255, 255, 255)
 
-        self.zoom = 4  #Starting zoom index value
+        self.zoom = 3  #Starting zoom index value
         self.symmetry = False
         self.center_plane = (x_start + self.plane_size // 2, y_start + self.plane_size // 2) 
 
         self.items = []  #List with pole or cero objetcs
-        self.clicked = False  #To catch keep track of different actions (button functionality)
+        self.clicked = False  #To catch and keep track of different actions (button functionality)
         self.emptyPole = Pole(self.poles_size, (0,0), (0,0), (0,0), False, y_start, self.plane_size)  #For unassigned display
         self.emptyCero = Cero(self.poles_size, (0,0), (0,0), (0,0), False, y_start, self.plane_size)
 
@@ -77,7 +77,7 @@ class ZPlane():
 
     def poles_and_ceros_display(self, win):
         for item in self.items:
-            item.draw(win, self.withe)  #Note: Overide the draw method in the cero class
+            item.draw(win, self.withe)
     
     def detect_collition(self, item, pos):
         mouse_collition = False
@@ -91,6 +91,7 @@ class ZPlane():
         return mouse_collition
     
     def change_color_when_over(self, win, item, color_change):
+        # Draws unassing pole or cero over the item
         if item.symmetry:
             if item.type == "Pole":
                 self.graph_pole(win, item.position, color_change)
@@ -188,7 +189,8 @@ class ZPlane():
             x_vals = np.round(value_pos[0], 2)
             y_vals = np.round(value_pos[1], 2)
             values_text = self.font.render(f"{x_vals} ; {y_vals}i", True, (255, 255, 255))
-            win.blit(values_text, (100, 515))
+            # Display the values of the pole on the screen
+            win.blit(values_text, (110, 525))
     
     def display_item_unassigned(self, win, pos, type, color):
         if self.symmetry:

@@ -51,11 +51,12 @@ class GraphPlotting():
                 if item.type == "Cero":
                     ceros_values.append(item.value)
 
-        return poles_values, ceros_values
+        return poles_values, ceros_values 
     
     def plot_magnitude(self, win, zplane):
         items = zplane.items  #Contains all poles and cero objetcs
         poles_val, ceros_val = self.get_poles_and_ceros(items)
+        
         pixels_mag = magnitude_values(ceros_val, poles_val, self.x_start, self.y_start, self.heigth)
         pygame.draw.lines(win, (255, 255, 255), False, pixels_mag)
         
