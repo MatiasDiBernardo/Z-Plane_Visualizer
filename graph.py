@@ -36,32 +36,33 @@ class GraphPlotting():
         ceros_values = []
         
         for item in items:
-            #Define if is a symmetry case or not
-            if item.symmetry:
-                #Defines the type of item
-                if item.type == "Pole":
-                    poles_values.append(item.value)
-                    poles_values.append(item.value_sym)
-                if item.type == "Cero":
-                    ceros_values.append(item.value)
-                    ceros_values.append(item.value_sym)
-            else:
-                if item.type == "Pole":
-                    poles_values.append(item.value)
-                if item.type == "Cero":
-                    ceros_values.append(item.value)
+            for _ in range(item.order):
+                #Define if is a symmetry case or not
+                if item.symmetry:
+                    #Defines the type of item
+                    if item.type == "Pole":
+                        poles_values.append(item.value)
+                        poles_values.append(item.value_sym)
+                    if item.type == "Cero":
+                        ceros_values.append(item.value)
+                        ceros_values.append(item.value_sym)
+                else:
+                    if item.type == "Pole":
+                        poles_values.append(item.value)
+                    if item.type == "Cero":
+                        ceros_values.append(item.value)
 
         return poles_values, ceros_values 
     
     def plot_magnitude(self, win, zplane):
-        items = zplane.items  #Contains all poles and cero objetcs
+        items = zplane.items  #Contains all poles and cero objects
         poles_val, ceros_val = self.get_poles_and_ceros(items)
         
         pixels_mag = magnitude_values(ceros_val, poles_val, self.x_start, self.y_start, self.heigth)
         pygame.draw.lines(win, (255, 255, 255), False, pixels_mag)
         
     def plot_phase(self, win, zplane):
-        items = zplane.items  #Contains all poles and cero objetcs
+        items = zplane.items  #Contains all poles and cero objects
         poles_val, ceros_val = self.get_poles_and_ceros(items)
         pixels_phase = phase_values(ceros_val, poles_val, self.x_start, self.y_start, self.heigth)
         pygame.draw.lines(win, (255, 255, 255), False, pixels_phase)

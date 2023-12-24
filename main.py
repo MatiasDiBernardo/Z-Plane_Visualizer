@@ -34,6 +34,7 @@ cb_untick_press = pygame.image.load('images2/checkbox_untick_press.png').convert
 #Objects init
 font = pygame.font.Font('images2/Jaapokki-Regular.otf', 16)
 font2 = pygame.font.Font('images2/Jaapokkisubtract-Regular.otf', 30)
+font4 = pygame.font.Font('images2/Jaapokki-Regular.otf', 14)
 font3 = pygame.font.Font('images/Arial Unicode MS Font.ttf', 15)
 zplane = ZPlane(25, 105, font) 
 mag_grap = GraphPlotting(500, 100, 400, 180, font3)
@@ -54,13 +55,17 @@ def main():
     pole_selection = False
     cero_selection = False
     item_moving = False
+    time_frames_info_display = 0
+    mouse_up = 0
 
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            
+            if event.type == pygame.MOUSEWHEEL:
+                mouse_up = event.y
+        
         #Static background
         WIN.fill((0,0,0))
         title = font2.render("Z-PLANE VISUALIZER", True, font_color)
@@ -107,7 +112,17 @@ def main():
 
         if item_moving:
             item_moving = zplane.move_item(WIN)
+            time_frames_info_display = 0
         
+        # Display info menu
+        if not pole_selection and not cero_selection and not item_moving:
+            if zplane.display_info_and_order(WIN, time_frames_info_display, FPS, font4, mouse_up):
+                time_frames_info_display += 1
+            else:
+                time_frames_info_display = 0
+
+        mouse_up = 0
+
         #Zoom buttons
         if ZOOM_PLUS_BUTTON.draw(WIN):
             zplane.zoom_plane_in()

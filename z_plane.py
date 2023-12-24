@@ -4,21 +4,21 @@ from poles_ceros import Pole, Cero
 
 class ZPlane():
     def __init__(self, x_start, y_start, font):
-        self.x_start = x_start  #Starting position (upper left)
+        self.x_start = x_start  # Starting position (upper left)
         self.y_start = y_start
-        self.plane_size = 400  #Size of the Z Plane
-        self.poles_size = 10  #Dimension of poles in pixels (same for ceros)
+        self.plane_size = 400  # Size of the Z Plane
+        self.poles_size = 10  # Dimension of poles in pixels (same for ceros)
         self.font = font
         self.background_color = (15, 15, 15)  #For the Z plane
         self.withe = (255, 255, 255)
 
-        self.zoom = 3  #Starting zoom index value
+        self.zoom = 3  # Starting zoom index value
         self.symmetry = False
         self.center_plane = (x_start + self.plane_size // 2, y_start + self.plane_size // 2) 
 
-        self.items = []  #List with pole or cero objetcs
-        self.clicked = False  #To catch and keep track of different actions (button functionality)
-        self.emptyPole = Pole(self.poles_size, (0,0), (0,0), (0,0), False, y_start, self.plane_size)  #For unassigned display
+        self.items = []  # List with pole or cero objetcs
+        self.clicked = False  # To catch and keep track of different actions (button functionality)
+        self.emptyPole = Pole(self.poles_size, (0,0), (0,0), (0,0), False, y_start, self.plane_size)  # For unassigned display
         self.emptyCero = Cero(self.poles_size, (0,0), (0,0), (0,0), False, y_start, self.plane_size)
 
     def default_background(self, win):
@@ -26,8 +26,8 @@ class ZPlane():
         pygame.draw.rect(win, self.background_color, (self.x_start, self.y_start, self.plane_size,self.plane_size))
 
         #Unit circle
-        zoom_values = [150, 100, 50, 20, 10, 2]  #List of different zoom values
-        self.margin = zoom_values[self.zoom]  #Zoom effect is control with the margin length in pixels
+        zoom_values = [150, 100, 50, 20, 10, 2]  # List of different zoom values
+        self.margin = zoom_values[self.zoom]  # Zoom effect is control with the margin length in pixels
 
         radius = self.plane_size//2 - self.margin
         pygame.draw.circle(win, self.withe, self.center_plane, radius, width=1)
@@ -105,6 +105,52 @@ class ZPlane():
                 self.graph_pole(win, item.position, color_change)
             if item.type == "Cero":
                 self.graph_cero(win, item.position, color_change)
+    
+    
+    def display_info_and_order(self, win, time_frames, fps, font, mouse_up):
+        mouse_over = False
+        pos = pygame.mouse.get_pos()
+        time = time_frames/fps
+        time_margin = 1.5  # Time in seconds over the pole needed to display the info menu
+        max_order = 4  # Maximun order avaliable for poles and ceros
+
+        for item in self.items:
+            if self.detect_collition(item, pos):
+                mouse_over = True
+                info = item.values()
+                # If there is a mousewheel event
+                if mouse_up != 0:
+                    if item.order < (max_order) and mouse_up == 1:
+                        item.order += 1
+                    
+                    if item.order > 1 and mouse_up == -1:
+                        item.order -= 1
+
+        if time > time_margin and mouse_over:
+            self.info_rectangle(win, pos, info, font)
+
+        return mouse_over
+
+    def info_rectangle(self, win, pos, info, font):
+        color = (24, 38, 46)
+        margin = 10
+        width = 140
+        heigth = 130
+        font_color = (255, 255, 255)
+        pygame.draw.rect(win, color, (pos[0] + margin, pos[1] + margin, width, heigth))
+        value = info["Value"]
+        value = np.round(value, 2)
+        sym = info["Symmetry"]
+        order = info["Order"]
+
+        title = font.render("INFORMATION", True, font_color)
+        win.blit(title, (pos[0] + margin + 5, pos[1] + margin + 5))
+        val_text = font.render(f"VALUE: {str(value)}", True, font_color)
+        win.blit(val_text, (pos[0] + margin + 5, pos[1] + 40))
+        sym_text = font.render(f"SYMMETRY: {str(sym)}", True, font_color)
+        win.blit(sym_text, (pos[0] + margin + 5, pos[1] + 65))
+        order_text = font.render(f"ORDER: {str(order)}", True, font_color)
+        win.blit(order_text, (pos[0] + margin + 5, pos[1] + 90))
 
     def click_objects(self, win):
         pos = pygame.mouse.get_pos()
