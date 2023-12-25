@@ -23,12 +23,12 @@ def transfer_function(zeros, poles):
 
     return mag, ang
 
-def values_to_pixels_mag(data, x0, y0, H):
+def values_to_pixels_mag(data_magnitude, x0, y0, H):
     #Linear mapping for y axis (assuming normalize magnitude)
     a = -H
     b = H + y0
 
-    y_vals = a * data + b
+    y_vals = a * data_magnitude + b
     mag_pixels = []
     
     for i in range(RES):
@@ -37,12 +37,12 @@ def values_to_pixels_mag(data, x0, y0, H):
     
     return mag_pixels
 
-def values_to_pixels_phase(data, x0, y0, H):
+def values_to_pixels_phase(data_phase, x0, y0, H):
     #Linear mapping for y axis (Phase is unwrapp between -pi and pi)
     a = -H/(2*np.pi)
     b = y0 + H/2
 
-    y_vals = a * data + b
+    y_vals = a * data_phase + b
     phase_pixels = []
 
     for i in range(RES):
@@ -61,10 +61,12 @@ def magnitude_values(ceros, poles, x0, y0, H):
         x0 (int): X position of the graph.
         y0 (int): Y position of the graph.
         H (int): Heigth of the graph.
+        symmetry (boolean): If the pole has a symmetry.
     Returns:
         list: List with pixels coordenates.
     """
     mag, phase = transfer_function(ceros, poles)
+
     mag = mag/np.max(mag)  #Normalize to show always under the same reference.
     mag_pixels = values_to_pixels_mag(mag, x0, y0, H)
 
