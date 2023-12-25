@@ -8,33 +8,33 @@ pygame.font.init()
 WIDTH = 925
 HEIGTH = 560
 WIN = pygame.display.set_mode((WIDTH, HEIGTH))
-FPS = 120
+FPS = 60
 
 clock = pygame.time.Clock()
-icon = pygame.image.load('images2/icon.png').convert_alpha()
+icon = pygame.image.load('images/icon.png').convert_alpha()
 pygame.display.set_icon(icon)
 pygame.display.set_caption("")
 
 #Load assets
-pole_image = pygame.image.load('images2/pole.png').convert_alpha()
-pole_image_press = pygame.image.load('images2/pole_press.png').convert_alpha()
-cero_image = pygame.image.load('images2/cero.png').convert_alpha()
-cero_image_press = pygame.image.load('images2/cero_press.png').convert_alpha()
-plus = pygame.image.load('images2/plus.png').convert_alpha()
-plus_press = pygame.image.load('images2/plus_press.png').convert_alpha()
-minus = pygame.image.load('images2/minus.png').convert_alpha()
-minus_press = pygame.image.load('images2/minus_press.png').convert_alpha()
-clear = pygame.image.load('images2/trash_bin.png').convert_alpha()
-clear_press = pygame.image.load('images2/trash_bin_press.png').convert_alpha()
-cb_tick = pygame.image.load('images2/checkbox_ticked.png').convert_alpha()
-cb_tick_press = pygame.image.load('images2/checkbox_ticked_press.png').convert_alpha()
-cb_untick = pygame.image.load('images2/checkbox_untick.png').convert_alpha()
-cb_untick_press = pygame.image.load('images2/checkbox_untick_press.png').convert_alpha()
+pole_image = pygame.image.load('images/pole.png').convert_alpha()
+pole_image_press = pygame.image.load('images/pole_press.png').convert_alpha()
+cero_image = pygame.image.load('images/cero.png').convert_alpha()
+cero_image_press = pygame.image.load('images/cero_press.png').convert_alpha()
+plus = pygame.image.load('images/plus.png').convert_alpha()
+plus_press = pygame.image.load('images/plus_press.png').convert_alpha()
+minus = pygame.image.load('images/minus.png').convert_alpha()
+minus_press = pygame.image.load('images/minus_press.png').convert_alpha()
+clear = pygame.image.load('images/trash_bin.png').convert_alpha()
+clear_press = pygame.image.load('images/trash_bin_press.png').convert_alpha()
+cb_tick = pygame.image.load('images/checkbox_ticked.png').convert_alpha()
+cb_tick_press = pygame.image.load('images/checkbox_ticked_press.png').convert_alpha()
+cb_untick = pygame.image.load('images/checkbox_untick.png').convert_alpha()
+cb_untick_press = pygame.image.load('images/checkbox_untick_press.png').convert_alpha()
 
 #Objects init
-font = pygame.font.Font('images2/Jaapokki-Regular.otf', 16)
-font2 = pygame.font.Font('images2/Jaapokkisubtract-Regular.otf', 30)
-font4 = pygame.font.Font('images2/Jaapokki-Regular.otf', 14)
+font = pygame.font.Font('images/Jaapokki-Regular.otf', 16)
+font2 = pygame.font.Font('images/Jaapokkisubtract-Regular.otf', 30)
+font4 = pygame.font.Font('images/Jaapokki-Regular.otf', 14)
 font3 = pygame.font.Font('images/Arial Unicode MS Font.ttf', 15)
 zplane = ZPlane(25, 105, font) 
 mag_grap = GraphPlotting(500, 100, 400, 180, font3)
@@ -143,12 +143,6 @@ def main():
         #Show magnitude spectrum
         mag_grap.plot_magnitude(WIN, zplane)
         phase_grap.plot_phase(WIN, zplane)
-
-        #Debug
-        items = zplane.items
-        if len(items) != 0:
-            ver = items[0].values()
-            #print(ver)
 
         pygame.display.update()
 
