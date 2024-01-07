@@ -34,7 +34,7 @@ To execute the program.
 python main.py
 ```
 
-## Improvements 
+## To do
 - Add impulse response graph
   
 - Add values and reference for the magnitude and phase plot
