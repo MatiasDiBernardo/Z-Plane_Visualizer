@@ -10,7 +10,7 @@ This project is designed as educational material, offering students a practical 
 
 - Display and move poles/zeros: The user can select and choose the position of zero or pole in the Z plane. With the symmetry option active, all the poles and zeros selected or moved are attached to their symmetric par with respect to the imaginary axes.
 
-- Order: The order of the poles/zeros can be modified with the mouse wheel up to increse or down to decrease. It supports up to order 4. The color of the zero/pole change with the order.increase
+- Order: The order of the poles/zeros can be modified with the mouse wheel up to increse or down to decrease. It supports up to order 4. The color of the zero/pole change with the order.
 
 - Information: Holding the cursor over a pole or zero displays information about the position, symmetry and order.
 
@@ -20,7 +20,7 @@ This project is designed as educational material, offering students a practical 
 
 - Magnitude Graph: The magnitude spectrum displayed in the app is normalized. This decision helps to keep the focus on the shape of the magnitude and it makes sure that the graph is visually meaningful for the user. The downside is that the difference in peak values is not captured.
 
-- Phase Graph: The phase is displayed unwrapped between -&\pi& and &\pi&. 
+- Phase Graph: The phase is displayed unwrapped between -pi and pi. 
 
 ## Installation
 
